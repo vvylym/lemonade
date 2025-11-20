@@ -46,11 +46,21 @@ The goal is to experiment with different stacks to build a **proxy-based load ba
 
 ## Features
 
+### HTTP Rest Endpoints
+
 The workspace will focus on a minimal HTTP Rest server providing the following endpoints:
 
 - /v1/health: Simple and minimal endpoint returning `200 OK`, indicating a healthy server.
 
 - /v1/work: Configurable endpoint returning `200 OK` after a defined delay (**10ms** by default bu extensible) that simulates work being done
+
+Other endpoints may be added during the experimentation.
+
+### Load Balancing Algorithms
+
+- **Round Robin**: 
+  
+- **Least Connection**: 
 
 ### Load Balancers
 
