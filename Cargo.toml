@@ -1,0 +1,49 @@
+[workspace]
+members = [
+    
+    "lemonade-actix",
+    "lemonade-axum",
+    "lemonade-hyper",
+    "lemonade-rocket",
+    "lemonade-shared",
+    "lemonade-tokio",
+    "lemonade-tracing",
+    "worker-actix",
+    "worker-axum",
+    "worker-hyper",
+    "worker-rocket",
+    "worker-shared",
+]
+resolver = "3"
+
+[workspace.dependencies]
+actix-web = "4"
+axum = "0.8"
+hyper = "1.8"
+reqwest = "0.12.24"
+rocket = "0.5"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1"
+thiserror = "2.0"
+tokio = { version = "1", features = ["full"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt", "registry"] }
+
+lemonade-tracing = { path = "./lemonade-tracing" }
+worker-shared = { path = "./worker-shared" }
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+missing_docs = "deny"
+
+[workspace.package]
+authors = ["Guillaume M. <235853469+vvylym@users.noreply.github.com>"]
+edition = "2024"
+readme = "README.md"
+license = "MIT"
+repository = "https://github.com/vvylym/lemonade.git"
+homepage = "https://github.com/vvylym/lemonade"
+documentation = "https://github.com/vvylym/lemonade/blob/main/README.md"
+keywords = []
+categories = []
+publish = false
