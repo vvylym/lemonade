@@ -1,0 +1,24 @@
+[package]
+name = "lemonade-actix"
+description = "Actix-web Load Balancer implementation"
+version = "0.1.0"
+authors.workspace = true
+edition.workspace = true
+readme.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+keywords.workspace = true
+categories.workspace = true
+publish = false
+
+[dependencies]
+actix-web = { workspace = true }
+tokio = { workspace = true }
+
+[dev-dependencies]
+
+
+[lints]
+workspace = true
