@@ -1,8 +1,10 @@
 name: CI
 
 on:
+  # Only run on push to main branch (not feature branches)
   push:
-    branches: ['**']
+    branches: ['main']
+  # Run on all pull requests
   pull_request:
     branches: ['**']
 
@@ -175,4 +177,3 @@ jobs:
           else
             echo "No coverage changes to commit"
           fi
-
