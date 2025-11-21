@@ -1,0 +1,178 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: ['**']
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+# Permissions for the workflow
+permissions:
+  contents: write  # Required to push commits back to the repository
+  pull-requests: read  # Required to read PR information
+
+jobs:
+  format:
+    name: Format Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+      
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+  clippy:
+    name: Clippy Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+      
+      - name: Run clippy
+        run: cargo clippy --all-targets --all-features --workspace -- -D warnings
+
+  test:
+    name: Test Suite
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+      
+      - name: Run tests
+        run: cargo test --workspace --all-features --verbose
+
+  coverage:
+    name: Coverage Report
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0  # Fetch all history for proper git operations
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@cargo-llvm-cov
+      
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+      
+      - name: Generate coverage report
+        run: |
+          cargo llvm-cov --workspace --all-features --lcov --output-path lcov.info
+          cargo llvm-cov --workspace --all-features --summary-only
+      
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./lcov.info
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+      
+      - name: Generate coverage summary
+        id: coverage
+        run: |
+          COVERAGE_OUTPUT=$(cargo llvm-cov --workspace --all-features --summary-only 2>&1 || echo "")
+          # Extract line coverage percentage from TOTAL line (first percentage found)
+          COVERAGE=$(echo "$COVERAGE_OUTPUT" | grep -i "^TOTAL" | awk '{for(i=1;i<=NF;i++) if($i ~ /^[0-9]+\.[0-9]+%$/) {print $i; exit}}' | sed 's/%//' || echo "0.00")
+          if [ -z "$COVERAGE" ] || [ "$COVERAGE" = "0.00" ]; then
+            # Fallback: try to find any percentage in TOTAL line
+            COVERAGE=$(echo "$COVERAGE_OUTPUT" | grep -i "TOTAL" | grep -oE "[0-9]+\.[0-9]+%" | head -1 | sed 's/%//' || echo "0.00")
+          fi
+          echo "coverage=$COVERAGE" >> $GITHUB_OUTPUT
+          echo "Coverage: $COVERAGE%"
+      
+      - name: Update README with coverage
+        if: github.ref == 'refs/heads/main'
+        run: |
+          COVERAGE_OUTPUT=$(cargo llvm-cov --workspace --all-features --summary-only 2>&1 || echo "")
+          # Extract line coverage percentage from TOTAL line (first percentage found)
+          COVERAGE=$(echo "$COVERAGE_OUTPUT" | grep -i "^TOTAL" | awk '{for(i=1;i<=NF;i++) if($i ~ /^[0-9]+\.[0-9]+%$/) {print $i; exit}}' | sed 's/%//' || echo "0.00")
+          if [ -z "$COVERAGE" ] || [ "$COVERAGE" = "0.00" ]; then
+            # Fallback: try to find any percentage in TOTAL line
+            COVERAGE=$(echo "$COVERAGE_OUTPUT" | grep -i "TOTAL" | grep -oE "[0-9]+\.[0-9]+%" | head -1 | sed 's/%//' || echo "0.00")
+          fi
+          ./scripts/update-coverage.sh "$COVERAGE"
+      
+      - name: Commit coverage update
+        if: github.ref == 'refs/heads/main'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git config --local pull.rebase false
+          git pull --rebase || true
+          git add README.md
+          if ! git diff --staged --quiet; then
+            git commit -m "chore: update coverage in README [skip ci]"
+            git push || echo "Push failed - this is expected if another commit was made"
+          else
+            echo "No coverage changes to commit"
+          fi
+
