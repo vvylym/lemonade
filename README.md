@@ -8,7 +8,7 @@ Yet another **Load Balancing** experiment in ***Rust Programming Language***!
 [![Axum](https://img.shields.io/badge/axum-0.8.7-purple.svg)](https://github.com/tokio-rs/axum)
 [![Rocket](https://img.shields.io/badge/rocket-0.5-red.svg)](https://rocket.rs/)
 [![Hyper](https://img.shields.io/badge/hyper-1.8.1-yellow.svg)](https://hyper.rs/)
-![Coverage](https://img.shields.io/badge/coverage-0.00%25-red)
+![Coverage](https://img.shields.io/badge/coverage-59.92%25-orange)
 [![CI](https://github.com/vvylym/lemonade/actions/workflows/ci.yml/badge.svg)](https://github.com/vvylym/lemonade/actions/workflows/ci.yml)
 
 ## What is Lemonade?
