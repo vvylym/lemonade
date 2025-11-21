@@ -1,0 +1,47 @@
+name: Security Audit
+
+on:
+  schedule:
+    # Run weekly on Tuesday at 00:00 UTC
+    - cron: '0 0 * * 2'
+  workflow_dispatch:  # Allow manual triggering
+  # Only run on push to main branch (not feature branches)
+  push:
+    branches: ['main']
+  # Run on all pull requests
+  pull_request:
+    branches: ['**']
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Install cargo-audit
+        run: |
+          cargo install cargo-audit --locked
+      
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+      
+      - name: Run security audit
+        run: |
+          cargo audit --deny warnings

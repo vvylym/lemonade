@@ -22,3 +22,11 @@ target
 
 # OS Specific
 .DS_Store
+
+# Coverage reports
+lcov.info
+lcov-*.info
+coverage-html/
+coverage-html-*/
+*.profraw
+*.profdata

@@ -1,0 +1,27 @@
+# Cargo-deny configuration file
+# See https://github.com/EmbarkStudios/cargo-deny for documentation
+
+# Check for banned/forbidden dependencies
+[bans]
+# Allow duplicate dependencies in the workspace
+multiple-versions = "warn"
+# Allow wildcard dependencies
+wildcards = "allow"
+
+# Check licenses
+[licenses]
+# List of explicitly allowed licenses
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "Unlicense",
+    "Unicode-3.0",
+    "Zlib",
+]
+
+# Check for security vulnerabilities
+[advisories]
+# Ignore advisories for these crates (if needed)
+ignore = []
