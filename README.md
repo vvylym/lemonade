@@ -313,9 +313,9 @@ You can view and manage dependency updates in the [Dependabot alerts](https://do
 - **Install audit tool**: `just install-audit`
 - **Install deny tool**: `just install-deny`
 
-These checks also run automatically in CI/CD:
-- **Security Audit**: Runs weekly (Tuesday) and on every push/PR
-- **Cargo Deny**: Runs weekly (Wednesday) and on every push/PR
+These checks also run automatically:
+- **Security Audit**: Runs weekly (Tuesday) and on every push/PR in CI/CD
+- **Cargo Deny**: Runs automatically in pre-commit hooks for every local commit
 
 ## Technology Stack
 
